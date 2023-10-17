@@ -1,0 +1,44 @@
+-SINTASSI-
+
+
+--------------------------------------------------------------------------------------------------------------------------
+RAGGRUPPAMENTI: agiscono tutti sulla SELECT
+N.B. La select non può includere elementi che non siano aggregate! Non posso fare quindi una select di nome e di MAX(Stipendio)
+
+1. Funzioni aggregate
+
+- SUM: opera sulla tabella risultante dalle clausole FROM e WHERE
+
+Esempio (se sono tutti null, restituisce NULL):  		SELECT SUM(Stipendio) AS TotaleStipendi FROM Imp WHERE Sede='01'
+Esempio con Distinct (considera solo valori distinti):  	SELECT SUM(DISTINCT Stipendio) AS TotaleStipendi FROM Imp WHERE Sede='01' 
+
+- COUNT: conta le tuple del risultato
+
+Esempio (può esserci * o un attributo, in quel caso: NULL ignorati ): 		SELECT COUNT(*)AS NumImpS01 FROM Imp WHERE Sede = ‘S01’
+
+- AVG: calcola la media 
+N.B. Bisogna ricordarsi il casting 
+
+Esempio senza casting (impreciso):			SELECT AVG(Stipendio) AS AvgStip FROM Imp
+Esempio senza casting:					SELECT AVG(CAST(STIPENDIO as Decimal(6,2))) AS AvgStip FROM Imp
+oppure							SELECT AVG(Stipendio/1.0) AS AvgStip FROM Imp
+
+2. Clausole aggiuntive
+- GROUP BY: Permette alla select di includere anche colonne dette "di raggruppamento" oltre elementi aggregate
+
+Esempio con una colonna: 		SELECT I.Ruolo, 	 AVG(I.Stipendio) AS AvgStip FROM Imp I JOIN Sedi S ON (I.Sede = S.Sede) WHERE S.Citta = ‘Milano’ GROUP BY I.Ruolo
+Esempio con due colonne: 		SELECT I.Sede, I.Ruolo, AVG(I.Stipendio) FROM Imp I JOIN Sedi S ON (I.Sede = S.Sede) WHERE S.Citta = ‘Milano’ GROUP BY I.Sede, I.Ruolo
+
+- HAVING: Permette di selezionare gruppi in base a proprietà complessive
+
+Esempio ottenere gli stipendi massimi minori di una soglia: 		SELECT Sede, COUNT(*) AS NumImp FROM Imp GROUP BY Sede HAVING MAX(Stipendio) <= 2000
+
+
+ESEMPIO COMPLETO: Per ogni sede di Bologna in cui il numero di impiegati è almeno 3, si vuole conoscere il valor medio degli stipendi, ordinando il risultato per valori decrescenti di stipendio medio e quindi per sede 
+
+SELECT I.Sede, AVG(Stipendio) AS AvgStipendio 
+FROM Imp I, Sedi S 
+WHERE I.Sede = S.Sede ANDS.Citta = ‘Bologna’
+GROUP BY I.Sede 
+HAVING COUNT(*) >= 3 
+ORDER BY AvgStipendio DESC, Sede
